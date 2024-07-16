@@ -1,4 +1,4 @@
-To run the server
+*To run the server*
 
 npm install
 node server
