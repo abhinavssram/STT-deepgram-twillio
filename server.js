@@ -14,7 +14,7 @@ const headers = {
 };
 let isDeepgramReady = false;
 
-INTERIM_RESULTS = true;
+INTERIM_RESULTS = false;
 ENCODING_VALUE = "mulaw";
 SAMPLE_RATE_VALUE = 8000;
 SMART_FORMAT = true;
@@ -51,8 +51,14 @@ dg_ws.on("message", function incoming(data) {
     // Extract the transcript from the response
     const transcript = response.channel.alternatives[0].transcript;
 
-    // Display the transcript
-    console.log("Transcript:", transcript);
+    const textToBeProcessed = "";
+    while (transcript != "") {
+      // Display the transcript
+      console.log("Transcript:", transcript);
+      textToBeProcessed += transcript;
+    }
+
+    // catch the text and hold on until there is empty transcript
   }
   console.log("------------------------------------------------");
 });
