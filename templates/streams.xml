@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Response>
-  <Say>This demo application will repeat back what you say. Watch the console to see the media messages. Begin speaking now.</Say>
+  <Say>Welcome to credomind demo. Begin speaking now.</Say>
   <Connect>
-    <Stream url='wss://09d3-2402-e280-3e5d-2c7-91de-fef6-4314-6742.ngrok-free.app'>
+    <Stream url='wss://8915-58-84-60-228.ngrok-free.app'>
       <Parameter name="aCutomParameter" value="aCustomValue that was set in TwiML" />
     </Stream>
   </Connect>
