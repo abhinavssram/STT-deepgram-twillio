@@ -211,7 +211,6 @@ dg_ws.on("message", async function incoming(data) {
     //confident interim result
     if (response.is_final === true && transcript.trim().length > 0) {
       textToBeProcessed += ` ${transcript}`;
-
       // end of speech and send the transcript for processing
       if (response.speech_final === true) {
         speechFinal = true; // this will prevent a utterance end which shows up after speechFinal from sending another response
@@ -223,23 +222,6 @@ dg_ws.on("message", async function incoming(data) {
         speechFinal = false;
       }
     }
-
-    // if (transcript != "") {
-    //   // Display the transcript
-    //   console.log("Transcript:", transcript);
-    //   console.log("------------------------------------------------");
-
-    //   /**
-    //    * send to deepgram text to speech api and get the audio buffer
-    //    */
-    //   try {
-    //     console.log("In transcription process");
-    //     await textToSpeech.synthesisAudio(transcript);
-    //   } catch (error) {
-    //     console.error("Error generating speech:", error);
-    //   }
-    //   // textToBeProcessed += transcript;
-    // }
   }
 });
 
