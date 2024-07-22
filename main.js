@@ -157,16 +157,20 @@ const headers = {
 };
 let isDeepgramReady = false;
 
-INTERIM_RESULTS = false;
+INTERIM_RESULTS = true;
 ENCODING_VALUE = "mulaw";
 SAMPLE_RATE_VALUE = 8000;
 SMART_FORMAT = true;
 MODEL = "nova-2-general";
 CHANNELS = 1;
+ENDPOINTING = 200;
+UTTERANCE_END = 1000;
 const dg_ws = new WebSocket(
-  `wss://api.deepgram.com/v1/listen?model=${MODEL}&interim_results=${INTERIM_RESULTS}&encoding=${ENCODING_VALUE}&sample_rate=${SAMPLE_RATE_VALUE}&smart_format=${SMART_FORMAT}&channels=${CHANNELS}`,
+  `wss://api.deepgram.com/v1/listen?model=${MODEL}&interim_results=${INTERIM_RESULTS}&encoding=${ENCODING_VALUE}&sample_rate=${SAMPLE_RATE_VALUE}&smart_format=${SMART_FORMAT}&channels=${CHANNELS}&utterance_end_ms=${UTTERANCE_END}&endpointing=${ENDPOINTING}`,
   { headers }
 );
+let textToBeProcessed = "";
+let speechFinal = false;
 dg_ws.on("open", function open() {
   console.log("WebSocket connection established with Deepgram");
   isDeepgramReady = true;
@@ -193,22 +197,49 @@ dg_ws.on("message", async function incoming(data) {
     // Extract the transcript from the response
     const transcript = response.channel.alternatives[0].transcript;
 
-    textToBeProcessed = "";
-    if (transcript != "") {
-      // Display the transcript
-      console.log("Transcript:", transcript);
-      console.log("------------------------------------------------");
-      /**
-       * send to deepgram text to speech api and get the audio buffer
-       */
-      try {
-        console.log("In transcription process");
-        await textToSpeech.synthesisAudio(transcript);
-      } catch (error) {
-        console.error("Error generating speech:", error);
+    if (response.type === "UtteranceEnd") {
+      if (speechFinal === false) {
+        // pause detected and send the transcript for partial processing
+        console.log("Send the trancipt so far for processing...");
+        await textToSpeech.synthesisAudio(textToBeProcessed);
+        return;
+      } else {
+        console.log("Pause detected after speech completion...");
       }
-      // textToBeProcessed += transcript;
     }
+
+    //confident interim result
+    if (response.is_final === true && transcript.trim().length > 0) {
+      textToBeProcessed += ` ${transcript}`;
+
+      // end of speech and send the transcript for processing
+      if (response.speech_final === true) {
+        speechFinal = true; // this will prevent a utterance end which shows up after speechFinal from sending another response
+        console.log("Send the transcript for complete processing...");
+        await textToSpeech.synthesisAudio(textToBeProcessed);
+        textToBeProcessed = "";
+      } else {
+        // if we receive a message without speechFinal reset speechFinal to false, this will allow any subsequent utteranceEnd messages to properly indicate the end of a message
+        speechFinal = false;
+      }
+    }
+
+    // if (transcript != "") {
+    //   // Display the transcript
+    //   console.log("Transcript:", transcript);
+    //   console.log("------------------------------------------------");
+
+    //   /**
+    //    * send to deepgram text to speech api and get the audio buffer
+    //    */
+    //   try {
+    //     console.log("In transcription process");
+    //     await textToSpeech.synthesisAudio(transcript);
+    //   } catch (error) {
+    //     console.error("Error generating speech:", error);
+    //   }
+    //   // textToBeProcessed += transcript;
+    // }
   }
 });
 
